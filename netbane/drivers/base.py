@@ -14,26 +14,32 @@ SCRAPLI_PLATFORM_MAP = {
 
 class BaseDriver(object):
     def __init__(self, host, username, password, platform, optional_args):
-        
-        ssh_config_file = optional_args.get("ssh_config_file", None)
-        auth_strict_key = optional_args.get("auth_strict_key", False)
-        port = optional_args.get('port', 22)
-        default_timeout = optional_args.get("default_timeout", 30)
-        timeout_ops = optional_args.get("timeout_ops", default_timeout)
-        timeout_socket = optional_args.get("timeout_socket", default_timeout)
-        timeout_transport = optional_args.get("timeout_transport", default_timeout)
-        
+
+        self.host = host
+        self.username = username
+        self.platform = platform
+        self.optional_args = optional_args
+        self.ssh_config_file = optional_args.get("ssh_config_file", None)
+        self.auth_strict_key = optional_args.get("auth_strict_key", False)
+        self.port = optional_args.get("port", 22)
+        self.default_timeout = optional_args.get("default_timeout", 30)
+        self.timeout_ops = optional_args.get("timeout_ops", self.default_timeout)
+        self.timeout_socket = optional_args.get("timeout_socket", self.default_timeout)
+        self.timeout_transport = optional_args.get(
+            "timeout_transport", self.default_timeout
+        )
+
         scrapli_args = {
-            "host": host,
-            "auth_username": username,
+            "host": self.host,
+            "auth_username": self.username,
             "auth_password": password,
-            "auth_strict_key": auth_strict_key,
-            "platform": SCRAPLI_PLATFORM_MAP[platform],
-            "port": port,
-            "ssh_config_file": ssh_config_file,
-            "timeout_ops": timeout_ops,
-            "timeout_socket": timeout_socket,
-            "timeout_transport": timeout_transport,
+            "auth_strict_key": self.auth_strict_key,
+            "platform": SCRAPLI_PLATFORM_MAP[self.platform],
+            "port": self.port,
+            "ssh_config_file": self.ssh_config_file,
+            "timeout_ops": self.timeout_ops,
+            "timeout_socket": self.timeout_socket,
+            "timeout_transport": self.timeout_transport,
         }
         self.conn = Scrapli(**scrapli_args)
 

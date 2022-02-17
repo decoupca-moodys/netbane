@@ -42,7 +42,8 @@ INTERFACE_FACTS = {
 
 
 SYSTEM_FACTS = {
-    "image": None,
+    "running_image": None,
     "uptime": None,
     "uptime_sec": None,
+    "code_version": None,
 }

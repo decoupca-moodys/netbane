@@ -1,6 +1,7 @@
 from netbane.utils import constants as c
 import re
 
+
 def int_time(int_time):
     # https//github.com/napalm-automation/napalm/blob/develop/napalm/ios/ios.py#L1233
     """
@@ -51,4 +52,3 @@ def int_time(int_time):
     raise ValueError(
         "Unexpected value for interface uptime string: {}".format(int_time)
     )
-
