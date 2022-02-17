@@ -1,18 +1,12 @@
-import importlib
-import inspect
 
-from napalm import get_network_driver as napalm_get_network_driver
-from napalm.base.base import NetworkDriver
+from netbane.drivers.cisco.ios import IOSDriver
+from netbane.drivers.cisco.nxos import NXOSDriver
 
+DRIVER_MAP = {
+    'ios': IOSDriver,
+    'nxos': NXOSDriver,
+}
 
-def get_network_driver(name, prepend=True):
-    name = name.lower()
-    # Look for netbane driver first, then pass on to napalm
-    netbane_module = f"netbane.drivers.{name}.{name}"
-    try:
-        module = importlib.import_module(netbane_module)
-        for name, obj in inspect.getmembers(module):
-            if inspect.isclass(obj) and issubclass(obj, NetworkDriver):
-                return obj
-    except ImportError:
-        napalm_get_network_driver(name=name, prepend=prepend)
+class NetBane(object):
+    def __new__(self, host, username, password, platform, optional_args):
+        return DRIVER_MAP[platform](host, username, password, platform, optional_args)

@@ -1,8 +1,10 @@
-from netbane.devices.cisco.generic import CiscoDevice
+from netbane.drivers.cisco.generic import CiscoDriver
 
-class NXOSDevice(CiscoDevice):
-    def __init__(self, nb_device):
-        super().__init__(nb_device)
+
+class NXOSDriver(CiscoDriver):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         self.LIVE_INTERFACE_FACTS_CMD = "show interface"
 
     def _normalize_system_facts(self):

@@ -1,6 +1,5 @@
-from netbane import api
+from netbane import spec
 from scrapli import Scrapli
-from ciscoconfparse import CiscoConfParse
 import copy
 import re
 
@@ -12,27 +11,29 @@ SCRAPLI_PLATFORM_MAP = {
     "junos": "juniper_junos",
 }
 
-class BaseDevice(object):
-    def __init__(self, host, username, password, port=22, platform, optional_args):
-        
-        ssh_config_file = optional_args.get('ssh_config_file', None)
-        auth_strict_key = optional-args.get('auth_strict_key', False)
-        default_timeout = optional_args.get('default_timeout', 30)
-        timeout_ops = optional_args.get('timeout_ops', default_timeout)
-        timeout_socket = optional_args.get('timeout_socket', default_timeout)
-        timeout_transport = optional_args.get('timeout_transport', default_timeout)
 
+class BaseDriver(object):
+    def __init__(self, host, username, password, platform, optional_args):
+        
+        ssh_config_file = optional_args.get("ssh_config_file", None)
+        auth_strict_key = optional_args.get("auth_strict_key", False)
+        port = optional_args.get('port', 22)
+        default_timeout = optional_args.get("default_timeout", 30)
+        timeout_ops = optional_args.get("timeout_ops", default_timeout)
+        timeout_socket = optional_args.get("timeout_socket", default_timeout)
+        timeout_transport = optional_args.get("timeout_transport", default_timeout)
+        
         scrapli_args = {
-            'host': host,
-            'auth_username': username,
-            'auth_password': password,
-            'auth_strict_key': auth_strict_key,
-            'platform': SCRAPLI_PLATFORM_MAP[platform],
-            'port': port,
-            'ssh_config_file': ssh_config_file,
-            'timeout_ops': timeout_ops,
-            'timeout_socket': timeout_socket,
-            'timeout_transport': timeout_transport,
+            "host": host,
+            "auth_username": username,
+            "auth_password": password,
+            "auth_strict_key": auth_strict_key,
+            "platform": SCRAPLI_PLATFORM_MAP[platform],
+            "port": port,
+            "ssh_config_file": ssh_config_file,
+            "timeout_ops": timeout_ops,
+            "timeout_socket": timeout_socket,
+            "timeout_transport": timeout_transport,
         }
         self.conn = Scrapli(**scrapli_args)
 
@@ -43,7 +44,7 @@ class BaseDevice(object):
         }
 
         # facts parsed into a data structure or object, but not yet normalized
-        # to conform with API standard
+        # to conform with spec standard
         self.parsed = {
             # running config as parsed by a library like CiscoConfParse
             "running_config": None,
@@ -58,7 +59,7 @@ class BaseDevice(object):
             "system_facts": None,
         }
 
-        # facts normalized to conform with API standard
+        # facts normalized to conform with spec standard
         self.normalized = {
             "live_interface_facts": None,
             "config_interface_facts": None,
@@ -122,14 +123,14 @@ class BaseDevice(object):
         all_facts = []
         for interface in self.parsed["live_interface_facts"]:
             interface_name = interface[self.LIVE_INTERFACE_NAME_KEY]
-            facts = copy.deepcopy(api.INTERFACE_FACTS)
+            facts = copy.deepcopy(spec.INTERFACE_FACTS)
             facts.update(self._normalize_config_interface_facts(interface_name))
             facts.update(self._normalize_live_interface_facts(interface_name))
             all_facts.append(facts)
         self.normalized["all_interface_facts"] = all_facts
 
     def _collate_system_facts(self):
-        system_facts = copy.deepcopy(api.SYSTEM_FACTS)
+        system_facts = copy.deepcopy(spec.SYSTEM_FACTS)
         system_facts.update(self._normalize_system_facts())
         self.normalized["system_facts"] = system_facts
 

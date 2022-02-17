@@ -1,8 +1,11 @@
-from netbane.devices.base import BaseDevice
+from netbane.drivers.base import BaseDriver
+from ciscoconfparse import CiscoConfParse
 
-class CiscoDevice(BaseDevice):
-    def __init__(self, nb_device):
-        super().__init__(nb_device)
+
+class CiscoDriver(BaseDriver):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         self.GET_RUNNING_CONFIG_CMD = "show run"
         self.LIVE_INTERFACE_NAME_KEY = "interface"
         self.GET_VLANS_CMD = "show vlan"
