@@ -1,8 +1,7 @@
 from pprint import pprint
 
-from netdev import config
-
 from netbane import NetBane
+from netdev import config
 
 nxos_host = "172.18.0.5"
 ios_host = "172.18.1.4"
