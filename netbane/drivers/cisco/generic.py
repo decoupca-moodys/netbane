@@ -39,9 +39,13 @@ class CiscoDriver(BaseDriver):
     def _get_interface_config_object(self, interface_name):
         if self.parsed["running_config"] is None:
             self._parse_running_config()
-        return self.parsed["running_config"].find_objects(
+        config_object = self.parsed["running_config"].find_objects(
             f"^interface {interface_name}", exactmatch=True
-        )[0]
+        )
+        if config_object:
+            return config_object[0]
+        else:
+            return None
 
     def _get_interface_mode(self, interface_config):
         match = self._interface_config_regex(interface_config, r"^no\sswitchport$")
@@ -74,11 +78,14 @@ class CiscoDriver(BaseDriver):
 
     def _normalize_config_interface_facts(self, interface_name):
         interface_config = self._get_interface_config_lines(interface_name)
-        interface_object = self._get_interface_config_object(interface_name)
-        return {
-            "interface": interface_name,
-            "mode": self._get_interface_mode(interface_config),
-            "access_vlan": self._get_interface_vlan("access", interface_config),
-            "native_vlan": self._get_interface_vlan("native", interface_config),
-            "is_ethernet": interface_object.is_ethernet_intf,
-        }
+        if interface_config:
+            interface_object = self._get_interface_config_object(interface_name)
+            return {
+                "interface": interface_name,
+                "mode": self._get_interface_mode(interface_config),
+                "access_vlan": self._get_interface_vlan("access", interface_config),
+                "native_vlan": self._get_interface_vlan("native", interface_config),
+                "is_ethernet": interface_object.is_ethernet_intf,
+            }
+        else:
+            return None

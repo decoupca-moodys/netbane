@@ -1,6 +1,7 @@
 from netbane.drivers.cisco.generic import CiscoDriver
 from netbane.utils.cisco.generic import parse_uptime
 from netbane.utils.cisco.ios import int_time
+from netbane.utils import listify
 
 
 class IOSDriver(CiscoDriver):
@@ -12,13 +13,13 @@ class IOSDriver(CiscoDriver):
         facts = self.parsed["system_facts"]
         return {
             "code_version": facts["version"],
-            "hardware": facts["hardware"],
-            "running_image": facts["running_image"],
-            "uptime": facts["uptime"],
-            "uptime_sec": parse_uptime(facts["uptime"]),
+            "hardware": listify(facts["hardware"]),
             "hostname": facts["hostname"],
             "reload_reason": facts["reload_reason"],
-            "serial": facts["serial"],
+            "running_image": facts["running_image"],
+            "serial": listify(facts["serial"]),
+            "uptime": facts["uptime"],
+            "uptime_sec": parse_uptime(facts["uptime"]),
         }
 
     def _normalize_live_interface_facts(self, interface_name):

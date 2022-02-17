@@ -126,17 +126,6 @@ class BaseDriver(object):
         """Fetch textfsm-parsed vlan facts"""
         self.vlans = self.parse_cli(self.GET_VLANS_CMD)
 
-    def _collate_all_interface_facts(self):
-        """Collates interface facts from live and config into single data structure"""
-        all_facts = []
-        for interface in self.parsed["live_interface_facts"]:
-            interface_name = interface[self.LIVE_INTERFACE_NAME_KEY]
-            facts = copy.deepcopy(spec.INTERFACE_FACTS)
-            facts.update(self._normalize_config_interface_facts(interface_name))
-            facts.update(self._normalize_live_interface_facts(interface_name))
-            all_facts.append(facts)
-        self.normalized["all_interface_facts"] = all_facts
-
     def _collate_system_facts(self):
         system_facts = copy.deepcopy(spec.SYSTEM_FACTS)
         system_facts.update(self._normalize_system_facts())
@@ -146,12 +135,22 @@ class BaseDriver(object):
         """Normalizes interface facts from config and live system"""
         live_facts = []
         config_facts = []
+        all_facts = []
         for interface in self.parsed["live_interface_facts"]:
             interface_name = interface[self.LIVE_INTERFACE_NAME_KEY]
-            live_facts.append(self._normalize_live_interface_facts(interface_name))
-            config_facts.append(self._normalize_config_interface_facts(interface_name))
+            combined_facts = copy.deepcopy(spec.INTERFACE_FACTS)
+            live_interface_facts = self._normalize_live_interface_facts(interface_name)
+            if live_interface_facts:
+                live_facts.append(live_interface_facts)
+                combined_facts.update(live_interface_facts)
+            config_interface_facts = self._normalize_config_interface_facts(interface_name)
+            if config_interface_facts:
+                config_facts.append(config_interface_facts)
+                combined_facts.update(config_interface_facts)
+            all_facts.append(combined_facts)
         self.normalized["live_interface_facts"] = live_facts
         self.normalized["config_interface_facts"] = config_facts
+        self.normalized['all_interface_facts'] = all_facts
 
     def get_system_facts(self):
         if self.system_facts is None:
@@ -166,6 +165,6 @@ class BaseDriver(object):
             self._fetch_running_config()
             self._fetch_all_live_interface_facts()
             self._normalize_all_interface_facts()
-            self._collate_all_interface_facts()
+            #self._collate_all_interface_facts()
             self.interface_facts = self.normalized["all_interface_facts"]
         return self.interface_facts

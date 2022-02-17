@@ -12,5 +12,5 @@ ConnectionPluginRegister.register("netbane", NetBane)
 nr = InitNornir(config_file="config.yaml")
 host = nr.filter(name="SWTC21AC02")
 
-result = host.run(task=netbane_get, getters=["system_facts"])
+result = host.run(task=netbane_get, getters=["interface_facts"])
 print_result(result)

@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional
 
 from nornir.core.configuration import Config
 
-from netbane import NetBane
+from netbane import NetBane as nb
 
 CONNECTION_NAME = "netbane"
 
@@ -42,7 +42,7 @@ class NetBane:
         if port and "port" not in parameters["optional_args"]:
             parameters["optional_args"]["port"] = port
 
-        connection = NetBane(**parameters)
+        connection = nb(**parameters)
         connection.open()
         self.connection = connection
 
