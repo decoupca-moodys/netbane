@@ -1,5 +1,6 @@
 from netbane.drivers.cisco.generic import CiscoDriver
-from netbane.utils.cisco.ios import int_time, parse_uptime
+from netbane.utils.cisco.generic import parse_uptime
+from netbane.utils.cisco.ios import int_time
 
 class IOSDriver(CiscoDriver):
     def __init__(self, *args, **kwargs):

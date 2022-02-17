@@ -1,8 +1,8 @@
 INTERFACE_FACTS = {
     # (str) full interface name - GigabitEthernet1/0/25
-    "interface": "",
+    "interface": None,
     # (str) administratively-defined description, if any
-    "description": "",
+    "description": None,
     # (bool) line/protocol status
     # None if unknown
     "is_up": None,
@@ -27,9 +27,9 @@ INTERFACE_FACTS = {
     # (list of dicts or none) list of secondary IPv4 addresses, if any. None if not set.
     "secondary_ip4": None,
     # (str) MAC address of interface, if exists
-    "mac": "",
-    # (int) MTU of interface, -1 if unknown
-    "mtu": -1,
+    "mac": None,
+    # (int) MTU of interface
+    "mtu": None,
     # (int or None) time in seconds since last traffic passed. -1 if never,
     #               None if unknown
     "last_used_sec": None,
@@ -37,7 +37,7 @@ INTERFACE_FACTS = {
     # -1 if never, None if unknown
     "last_used": None,
     # (str) port mode: access, trunk or routed. empty string if unknown.
-    "mode": "",
+    "mode": None,
 }
 
 

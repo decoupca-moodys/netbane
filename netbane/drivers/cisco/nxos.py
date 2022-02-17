@@ -1,5 +1,5 @@
 from netbane.drivers.cisco.generic import CiscoDriver
-
+from netbane.utils.cisco.generic import parse_uptime
 
 class NXOSDriver(CiscoDriver):
     def __init__(self, *args, **kwargs):
@@ -11,7 +11,7 @@ class NXOSDriver(CiscoDriver):
         facts = self.parsed["system_facts"]
         return {
             "uptime": facts["uptime"],
-            "uptime_sec": ios.parse_uptime(facts["uptime"]),
+            "uptime_sec": parse_uptime(facts["uptime"]),
             "image": facts["boot_image"],
         }
 
