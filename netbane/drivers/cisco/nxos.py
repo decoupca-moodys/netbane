@@ -1,6 +1,6 @@
 from netbane.drivers.cisco.generic import CiscoDriver
-from netbane.utils.cisco.generic import parse_uptime
 from netbane.utils import listify
+from netbane.utils.cisco.generic import parse_uptime
 
 
 class NXOSDriver(CiscoDriver):

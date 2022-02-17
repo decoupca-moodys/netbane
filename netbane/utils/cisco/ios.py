@@ -1,5 +1,6 @@
-from netbane.utils import constants as c
 import re
+
+from netbane.utils import constants as c
 
 
 def int_time(int_time):

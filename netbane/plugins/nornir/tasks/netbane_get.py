@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 
 from nornir.core.task import Result, Task
 
-from netbane.plugins.connections import CONNECTION_NAME
+from netbane.plugins.nornir.connections import CONNECTION_NAME
 
 GetterOptionsDict = Optional[Dict[str, Dict[str, Any]]]
 

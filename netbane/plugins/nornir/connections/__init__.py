@@ -2,20 +2,13 @@ from typing import Any, Dict, Optional
 
 from nornir.core.configuration import Config
 
-from netbane import get_network_driver
+from netbane import NetBane
 
 CONNECTION_NAME = "netbane"
 
 
-class Netbane:
-    """
-    This plugin connects to the device using the NAPALM driver and sets the
-    relevant connection.
-    The dictionary passed via ``extras`` is passed directly as kwargs to the
-    napalm constructor. This means you could pass the dictionary::
-        {"optional_args" :{ "global_delay_factor": 2}}
-    To tell napalm to pass that option to netmiko.
-    """
+class NetBane:
+    """Open connection to device with NetBane"""
 
     def open(
         self,
@@ -30,9 +23,10 @@ class Netbane:
         extras = extras or {}
 
         parameters: Dict[str, Any] = {
-            "hostname": hostname,
+            "host": hostname,
             "username": username,
             "password": password,
+            "platform": platform,
             "optional_args": {},
         }
 
@@ -48,8 +42,7 @@ class Netbane:
         if port and "port" not in parameters["optional_args"]:
             parameters["optional_args"]["port"] = port
 
-        network_driver = get_network_driver(platform)
-        connection = network_driver(**parameters)
+        connection = NetBane(**parameters)
         connection.open()
         self.connection = connection
 

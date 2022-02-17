@@ -1,7 +1,9 @@
-from netbane import spec
-from scrapli import Scrapli
 import copy
 import re
+
+from scrapli import Scrapli
+
+from netbane import spec
 
 SCRAPLI_PLATFORM_MAP = {
     "eos": "arista_eos",
