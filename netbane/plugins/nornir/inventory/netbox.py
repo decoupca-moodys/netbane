@@ -1,7 +1,19 @@
 import copy
 
 from nornir.core.inventory import Host
+# TODO: remove this dependency
+from netdev.netbox import nb
 
+REGION_MAP = {}
+sites = nb.dcim.sites.filter()
+for site in sites:
+    if site.region:
+        REGION_MAP[site.name] = site.region.slug
+    else:
+        REGION_MAP[site.name] = None
+
+def get_site_region(site):
+   return REGION_MAP[site]
 
 def netbox_transform(host: Host) -> None:
     # store raw netbox data in separate key in case we want it later
@@ -14,9 +26,5 @@ def netbox_transform(host: Host) -> None:
     for tag in netbox["tags"]:
         host.data["tags"].append(tag["slug"])
 
-
-def has_any_tags(host: Host, tags: list) -> bool:
-    for tag in tags:
-        if tag in host.data["tags"]:
-            return True
-    return False
+    # add region
+    host.data['region'] = get_site_region(netbox['site']['name'])
