@@ -15,7 +15,10 @@ class CiscoDriver(BaseDriver):
             return None
         if self.vlans is None:
             self._fetch_vlans()
-        vlan_dict = next(x for x in self.vlans if int(x["vlan_id"]) == vlan_id)
+        try:
+            vlan_dict = next(x for x in self.vlans if int(x["vlan_id"]) == vlan_id)
+        except:
+            import ipdb; ipdb.set_trace()
         return vlan_dict["name"]
 
     def _get_interface_config_lines(self, interface_name):
