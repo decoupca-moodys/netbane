@@ -2,6 +2,7 @@ import copy
 import re
 
 from scrapli import Scrapli
+from ciscoconfparse import CiscoConfParse
 
 from netbane import spec
 
