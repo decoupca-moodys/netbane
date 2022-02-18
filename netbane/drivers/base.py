@@ -118,6 +118,13 @@ class BaseDriver(object):
         """Fetch raw running config from device"""
         self.raw["running_config"] = self.cli(self.GET_RUNNING_CONFIG_CMD).result
 
+    def _parse_running_config(self):
+        if self.raw["running_config"] is None:
+            self._fetch_running_config()
+        self.parsed["running_config"] = CiscoConfParse(
+            self.raw["running_config"].splitlines()
+        )
+
     def _fetch_system_facts(self):
         """Fetch textfsm-parsed system facts"""
         self.parsed["system_facts"] = self.parse_cli(self.GET_SYSTEM_FACTS_CMD)[0]

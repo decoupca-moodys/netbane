@@ -11,3 +11,9 @@ def netbox_transform(host: Host) -> None:
     host.data['tags'] = []
     for tag in netbox['tags']:
         host.data['tags'].append(tag['slug'])
+
+def has_any_tags(host: Host, tags: list) -> bool:
+    for tag in tags:
+        if tag in host.data['tags']:
+            return True
+    return False

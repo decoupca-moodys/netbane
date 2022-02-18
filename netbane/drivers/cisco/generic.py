@@ -20,15 +20,6 @@ class CiscoDriver(BaseDriver):
         vlan_dict = next(x for x in self.vlans if int(x["vlan_id"]) == vlan_id)
         return vlan_dict["name"]
 
-    # TODO: may be able to move this to BaseClass, since CiscoConfParse can
-    # handle configs from many vendors
-    def _parse_running_config(self):
-        if self.raw["running_config"] is None:
-            self._fetch_running_config()
-        self.parsed["running_config"] = CiscoConfParse(
-            self.raw["running_config"].splitlines()
-        )
-
     def _get_interface_config_lines(self, interface_name):
         if self.parsed["running_config"] is None:
             self._parse_running_config()
