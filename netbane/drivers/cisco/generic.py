@@ -1,5 +1,3 @@
-from ciscoconfparse import CiscoConfParse
-
 from netbane.drivers.base import BaseDriver
 
 

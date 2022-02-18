@@ -1,7 +1,7 @@
 from netbane.drivers.cisco.generic import CiscoDriver
+from netbane.utils import listify
 from netbane.utils.cisco.generic import parse_uptime
 from netbane.utils.cisco.ios import int_time
-from netbane.utils import listify
 
 
 class IOSDriver(CiscoDriver):

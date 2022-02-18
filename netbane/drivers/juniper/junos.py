@@ -6,7 +6,8 @@ class JUNOSDriver(BaseDriver):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.LIVE_INTERFACE_FACTS_CMD = "show interfaces"
-        self.GET_RUNNING_CONFIG_CMD = 'show configuration'
+        self.GET_RUNNING_CONFIG_CMD = "show configuration"
+        self.GET_SYSTEM_FACTS_CMD = 'show version'
 
     def _normalize_system_facts(self):
         facts = self.parsed["system_facts"]
