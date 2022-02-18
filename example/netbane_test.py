@@ -4,14 +4,14 @@ from netbane import NetBane
 from netdev import config
 
 nxos_host = "172.18.0.5"
-ios_host = "172.18.2.155"
+ios_host = "172.18.34.129"
 junos_host = "172.25.22.10"
 
 netbane_args = {
-    "host": junos_host,
+    "host": ios_host,
     "username": config.NETWORK_USERNAME,
     "password": config.NETWORK_PASSWORD,
-    "platform": "junos",
+    "platform": "ios",
     "optional_args": {
         "ssh_config_file": "~/.ssh/config",
         "default_timeout": 60,

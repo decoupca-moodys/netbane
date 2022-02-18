@@ -69,7 +69,7 @@ class BaseDriver(object):
             # interface facts derived from config parsing
             "config_interface_facts": None,
             # textfsm-parsed vlan facts derived from a command like `show vlan`
-            "vlan_facts": None,
+            "vlans": None,
             # textfsm-parsed system facts derived from a command like `show version`
             "system_facts": None,
         }
@@ -138,7 +138,7 @@ class BaseDriver(object):
 
     def _fetch_vlans(self):
         """Fetch textfsm-parsed vlan facts"""
-        self.vlans = self.parse_cli(self.GET_VLANS_CMD)
+        self.parsed['vlans'] = self.parse_cli(self.GET_VLANS_CMD)
 
     def _collate_system_facts(self):
         system_facts = copy.deepcopy(spec.SYSTEM_FACTS)
@@ -184,3 +184,9 @@ class BaseDriver(object):
             # self._collate_all_interface_facts()
             self.interface_facts = self.normalized["all_interface_facts"]
         return self.interface_facts
+
+    def get_vlans(self):
+        if self.vlans is None:
+            self._fetch_vlans()
+            self.vlans = self.parsed['vlans']
+        return self.vlans

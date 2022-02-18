@@ -15,8 +15,13 @@ class CiscoDriver(BaseDriver):
             return None
         if self.vlans is None:
             self._fetch_vlans()
-        vlan_dict = next(x for x in self.vlans if int(x["vlan_id"]) == vlan_id)
-        return vlan_dict["name"]
+        for vlan in self.vlans:
+            if int(vlan['vlan_id']) == vlan_id:
+                return vlan['name']
+        # I thought it was impossible, but I did encounter an edge
+        # case where a port had an access vlan ID assigned that did
+        # not show up in the vlan list
+        return None
 
     def _get_interface_config_lines(self, interface_name):
         if self.parsed["running_config"] is None:
