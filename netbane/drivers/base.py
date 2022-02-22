@@ -1,8 +1,9 @@
 import copy
 import re
 
-from scrapli import Scrapli
 from ciscoconfparse import CiscoConfParse
+from scrapli import Scrapli
+
 from netbane import spec
 
 SCRAPLI_PLATFORM_MAP = {
@@ -61,35 +62,15 @@ class BaseDriver(object):
         # facts parsed into a data structure or object, but not yet normalized
         # to conform with spec standard
         self.parsed = {
-            # running config as parsed by a library like CiscoConfParse
-            "running_config": None,
-            # textfsm-parsed interface facts derived from
-            # a command like `show interfaces`
-            "live_interface_facts": None,
-            # interface facts derived from config parsing
-            "config_interface_facts": None,
-            # textfsm-parsed vlan facts derived from a command like `show vlan`
-            "vlans": None,
-            # textfsm-parsed system facts derived from a command like `show version`
-            "system_facts": None,
-        }
-
-        # facts normalized to conform with spec standard
-        self.normalized = {
-            "live_interface_facts": None,
-            "config_interface_facts": None,
-            "all_interface_facts": None,
-            "system_facts": None,
+            "textfsm": {},
+            "ttp": {},
+            "genie": {},
         }
 
         # facts ready for use, normalized and collated
         self.interface_facts = None
         self.vlans = None
         self.system_facts = None
-        self.LIVE_INTERFACE_NAME_KEY = ""
-        self.LIVE_INTERFACE_FACTS_CMD = ""
-        self.GET_RUNNING_CONFIG_CMD = ""
-        self.GET_SYSTEM_FACTS_CMD = ""
 
     def open(self):
         self.conn.open()
@@ -100,8 +81,18 @@ class BaseDriver(object):
     def cli(self, command):
         return self.conn.send_command(command)
 
-    def parse_cli(self, command):
-        return self.conn.send_command(command).textfsm_parse_output()
+    def parse_cli(self, command, parser="textfsm", template=None):
+        output = self.conn.send_command(command)
+        if parser == "textfsm":
+            return output.textfsm_parse_output()
+        elif parser == "genie":
+            return output.genie_parse_output()
+        elif parser == "ttf":
+            return output.ttf_parse_output(template=template)
+        else:
+            raise ValueError(
+                f"Unknown parser: {parser}. Must use textfsm, genie, or ttf."
+            )
 
     def _interface_config_regex(self, interface_config, pattern):
         for line in interface_config:
@@ -138,7 +129,7 @@ class BaseDriver(object):
 
     def _fetch_vlans(self):
         """Fetch textfsm-parsed vlan facts"""
-        self.parsed['vlans'] = self.parse_cli(self.GET_VLANS_CMD)
+        self.parsed["vlans"] = self.parse_cli(self.GET_VLANS_CMD)
 
     def _collate_system_facts(self):
         system_facts = copy.deepcopy(spec.SYSTEM_FACTS)
@@ -168,12 +159,39 @@ class BaseDriver(object):
         self.normalized["config_interface_facts"] = config_facts
         self.normalized["all_interface_facts"] = all_facts
 
-    def get_system_facts(self):
-        if self.system_facts is None:
-            self._fetch_system_facts()
-            self._normalize_system_facts()
-            self._collate_system_facts()
-            self.system_facts = self.normalized["system_facts"]
+    def _sanitize_cmd(self, cmd):
+        return cmd.replace(" ", "_")
+
+    def _fetch(self, getter=None, force=False):
+        sources = self.CMD_MAP[getter]
+        for source in sources:
+            cmd = source["cmd"]
+            parser = source["parser"]
+            if source["source"] == "running_config":
+                local_cache = self.raw
+                cache_key = "running_config"
+                data = local_cache.get(cache_key)
+                if data is None or force:
+                    local_cache[cache_key] = self.cli(cmd)
+            else:
+                local_cache = self.parsed[parser]
+                cache_key = self._sanitize_cmd(cmd)
+                data = local_cache.get(cache_key)
+                if data is None or force:
+                    output = self.parse_cli(cmd, parser=parser)
+                    # extract single-element results
+                    if len(output) == 1:
+                        local_cache[cache_key] = output[0]
+                    else:
+                        local_cache[cache_key] = output
+
+    def _extract(self, getter=None):
+        method = getattr(self, f"_extract_{getter}")
+        method()
+
+    def get_system_facts(self, force=False):
+        self._fetch("system_facts")
+        self._extract("system_facts")
         return self.system_facts
 
     def get_interface_facts(self):
@@ -188,5 +206,5 @@ class BaseDriver(object):
     def get_vlans(self):
         if self.vlans is None:
             self._fetch_vlans()
-            self.vlans = self.parsed['vlans']
+            self.vlans = self.parsed["vlans"]
         return self.vlans

@@ -16,8 +16,8 @@ class CiscoDriver(BaseDriver):
         if self.vlans is None:
             self._fetch_vlans()
         for vlan in self.vlans:
-            if int(vlan['vlan_id']) == vlan_id:
-                return vlan['name']
+            if int(vlan["vlan_id"]) == vlan_id:
+                return vlan["name"]
         # I thought it was impossible, but I did encounter an edge
         # case where a port had an access vlan ID assigned that did
         # not show up in the vlan list
