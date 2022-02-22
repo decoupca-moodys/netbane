@@ -55,6 +55,9 @@ class IOSDriver(CiscoDriver):
             "uptime_sec": parse_uptime(shver["uptime"]),
         }
 
+    def _extract_interface_facts(self):
+        pass
+
     def _normalize_live_interface_facts(self, interface_name):
         """Extracts the facts we need for a given interface from live facts"""
         interface = self._get_live_interface_facts(interface_name)
