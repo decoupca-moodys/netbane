@@ -11,20 +11,20 @@ class NXOSDriver(CiscoDriver):
         self.SOURCES = {
             "system_facts": [
                 {
-                    "source": "cmd",
+                    #"source": "cmd",
                     "cmd": "show version",
-                    "parser": "textfsm",
-                    "templates": [
-                        'ntc_templates',
-                    ],
+                    #"parser": "textfsm",
+                    #"templates": [
+                    #    'ntc_templates',
+                    #],
                 },
                 {
-                    "source": "cmd",
+                    #"source": "cmd",
                     "cmd": "show boot",
-                    "parser": "textfsm",
-                    "templates": [
-                        "ntc_templates",
-                    ],
+                    #"parser": "textfsm",
+                    #"templates": [
+                    #    "ntc_templates",
+                    #],
                 },
             ],
             "interface_facts": [
