@@ -51,28 +51,17 @@ class NXOSDriver(CiscoDriver):
             ],
             "interface_facts": [
                 {
-                    "source": "cmd",
                     "cmd": "show interface",
-                    "parser": "textfsm",
-                    "templates": [
-                        "ntc_templates",
-                    ],
                 },
                 {
                     "source": "running_config",
                     "cmd": "show running-config",
                     "parser": "ciscoconfparse",
-                    "templates": None,
                 },
             ],
             "vlans": [
                 {
-                    "source": "cmd",
                     "cmd": "show vlan",
-                    "parser": "textfsm",
-                    "templates": [
-                        "ntc_templates",
-                    ],
                 },
             ],
         }

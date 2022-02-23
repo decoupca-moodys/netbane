@@ -221,7 +221,7 @@ class BaseDriver(object):
             key = self._sanitize_cmd(source["cmd"])
             response = cache[key]
             parsers = source["parsers"]
-            cmd = source['cmd']
+            cmd = source["cmd"]
             for parser in parsers:
                 self._parse_source_response(cmd, response, parser)
 
