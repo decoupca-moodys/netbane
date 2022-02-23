@@ -22,6 +22,7 @@ CISCOCONFPARSE_MAP = {
 }
 
 
+
 class BaseDriver(object):
     def __init__(self, host, username, password, platform, optional_args):
 
@@ -52,6 +53,8 @@ class BaseDriver(object):
             "timeout_transport": self.timeout_transport,
         }
         self.conn = Scrapli(**scrapli_args)
+
+        self._init_sources()
 
         # completely unformatted facts discovered from device
         # untouched response strings from command output
@@ -93,6 +96,16 @@ class BaseDriver(object):
             raise ValueError(
                 f"Unknown parser: {parser}. Must use textfsm, genie, or ttf."
             )
+
+    def _init_sources(self):
+        for getter, sources in self.SOURCES.items():
+            for source in sources:
+                if not source.get('cmd'):
+                    raise ValueError(f'Source definition for {getter} missing required "cmd"')
+                source['source'] = source.get('source', 'cmd')
+                source['parser'] = source.get('parser', 'textfsm')
+                source['templates'] = source.get('templates', ['ntc_templates'])
+                 
 
     def _interface_config_regex(self, interface_config, pattern):
         for line in interface_config:
