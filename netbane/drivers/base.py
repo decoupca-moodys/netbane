@@ -1,6 +1,7 @@
 import copy
 import re
 
+from scrapli.helper import textfsm_parse
 from ciscoconfparse import CiscoConfParse
 from scrapli import Scrapli
 
@@ -20,7 +21,6 @@ CISCOCONFPARSE_MAP = {
     "nxos": {"syntax": "ios", "comment": "!"},
     "junos": {"syntax": "junos", "comment": "#!"},
 }
-
 
 
 class BaseDriver(object):
@@ -85,13 +85,18 @@ class BaseDriver(object):
         return self.conn.send_command(command)
 
     def parse_cli(self, command, parser="textfsm", template=None):
-        output = self.conn.send_command(command)
+        response = self.conn.send_command(command)
         if parser == "textfsm":
-            return output.textfsm_parse_output()
+            if template is None or template == "ntc_templates":
+                return response.textfsm_parse_output()
+            else:
+                return textfsm_parse(template, response.result)
         elif parser == "genie":
-            return output.genie_parse_output()
+            if template is not None:
+                raise ValueError("Genie does not support custom templates")
+            return response.genie_parse_output()
         elif parser == "ttf":
-            return output.ttf_parse_output(template=template)
+            return response.ttf_parse_output(template=template)
         else:
             raise ValueError(
                 f"Unknown parser: {parser}. Must use textfsm, genie, or ttf."
@@ -100,12 +105,12 @@ class BaseDriver(object):
     def _init_sources(self):
         for getter, sources in self.SOURCES.items():
             for source in sources:
-                if not source.get('cmd'):
-                    raise ValueError(f'Source definition for {getter} missing required "cmd"')
-                source['source'] = source.get('source', 'cmd')
-                source['parser'] = source.get('parser', 'textfsm')
-                source['templates'] = source.get('templates', ['ntc_templates'])
-                 
+                if not source.get("cmd"):
+                    raise ValueError(
+                        f'Source definition for {getter} missing required "cmd"'
+                    )
+                source["source"] = source.get("source", "cmd")
+                source["parsers"] = source.get("parsers", [self.DEFAULT_PARSER])
 
     def _interface_config_regex(self, interface_config, pattern):
         for line in interface_config:
@@ -175,11 +180,28 @@ class BaseDriver(object):
     def _sanitize_cmd(self, cmd):
         return cmd.replace(" ", "_")
 
+    def _fetch_parser_data(self, cmd, parser):
+        if isinstance(parser, str):
+            parser_name = parser
+            output = self.parse_cli(cmd, parser=parser_name)
+        elif isinstance(parser, dict):
+            for parser_name, templates in parser.items():
+                for template in templates:
+                    output = self.parse_cli(cmd, parser=parser_name, template=template)
+                    if output:
+                        break
+
+        # un-nest single-element lists
+        if isinstance(output, list) and len(output) == 1:
+             output = output[0]
+
+        return output
+
     def _fetch(self, getter=None, force=False):
         sources = self.SOURCES[getter]
         for source in sources:
             cmd = source["cmd"]
-            parser = source["parser"]
+            parsers = source["parsers"]
             if source["source"] == "running_config":
                 local_cache = self.raw
                 cache_key = "running_config"
@@ -187,15 +209,16 @@ class BaseDriver(object):
                 if data is None or force:
                     local_cache[cache_key] = self.cli(cmd)
             else:
-                local_cache = self.parsed[parser]
-                cache_key = self._sanitize_cmd(cmd)
-                data = local_cache.get(cache_key)
-                if data is None or force:
-                    output = self.parse_cli(cmd, parser=parser)
-                    # extract single-element results
-                    if len(output) == 1:
-                        local_cache[cache_key] = output[0]
-                    else:
+                for parser in parsers:
+                    if isinstance(parser, str):
+                        parser_name = parser
+                    elif isinstance(parser, dict):
+                        parser_name = list(parser.keys())[0]
+                    local_cache = self.parsed[parser_name]
+                    cache_key = self._sanitize_cmd(cmd)
+                    data = local_cache.get(cache_key)
+                    if data is None or force:
+                        output = self._fetch_parser_data(cmd, parser)
                         local_cache[cache_key] = output
 
     def _extract(self, getter=None):
@@ -203,7 +226,7 @@ class BaseDriver(object):
         method()
 
     def get_system_facts(self, force=False):
-        self._fetch("system_facts")
+        self._fetch("system_facts", force=force)
         self._extract("system_facts")
         return self.system_facts
 

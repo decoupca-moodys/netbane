@@ -1,4 +1,4 @@
-from pprint import pprint
+from rich.pretty import pprint
 
 from netbane import NetBane
 from netdev import config
@@ -21,7 +21,7 @@ netbane_args = {
 device = NetBane(**netbane_args)
 device.open()
 pprint(device.get_system_facts())
-#pprint(device.get_interface_facts())
+# pprint(device.get_interface_facts())
 import ipdb
 
 ipdb.set_trace()

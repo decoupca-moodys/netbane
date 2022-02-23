@@ -6,53 +6,59 @@ from netbane.utils.cisco.ios import int_time
 
 class IOSDriver(CiscoDriver):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-       self.SOURCES = {
+        self.LIVE_INTERFACE_FACTS_CMD = "show interfaces"
+        self.DEFAULT_PARSER = "textfsm"
+        # each key corresponds to the getter name
+        # values are a list of sources for that getter
+        # each source must include a 'cmd' to run
+        # each source may specify one or more parsing engines
+        # to parse the 'cmd' with.
+        # each of these may have one or more templates to try.
+        # For each (getter, parser) combination, netbane will
+        # return at most one parsed result.
+        self.SOURCES = {
             "system_facts": [
                 {
-                    "source": "cmd",
+                    # the only required key for each getter is 'cmd'
+                    # the 'cmd' will be parsed by DEFAULT_PARSER using
+                    # default options for that parser.
                     "cmd": "show version",
-                    "parser": "textfsm",
-                    "templates": [
-                        'ntc_templates',
+                    "parsers": [
+                        "genie",
+                        "textfsm",
                     ],
                 },
                 {
-                    "source": "cmd",
+                    # if we want to use a different parser or parsing
+                    # options, set them like this:
                     "cmd": "show boot",
-                    "parser": "textfsm",
-                    "templates": [
-                        "ntc_templates",
+                    "parsers": [
+                        # genie does not support any options,
+                        # so we can pass it as a string.
+                        "genie",
+                        "textfsm",
                     ],
                 },
             ],
             "interface_facts": [
                 {
-                    "source": "cmd",
                     "cmd": "show interfaces",
-                    "parser": "textfsm",
-                    'templates': [
-                        'ntc_templates',
-                    ],
                 },
                 {
                     "source": "running_config",
                     "cmd": "show running-config",
                     "parser": "ciscoconfparse",
-                    'templates': None,
+                    "templates": None,
                 },
             ],
             "vlans": [
                 {
-                    "source": "cmd",
                     "cmd": "show vlan",
-                    "parser": "textfsm",
-                    'templates': [
-                        'ntc_templates',
-                    ],
                 },
             ],
         }
+
+        super().__init__(*args, **kwargs)
 
     def _extract_system_facts(self):
         shver = self.parsed["textfsm"]["show_version"]

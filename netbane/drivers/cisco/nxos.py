@@ -5,26 +5,48 @@ from netbane.utils.cisco.generic import parse_uptime
 
 class NXOSDriver(CiscoDriver):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
         self.LIVE_INTERFACE_FACTS_CMD = "show interface"
+        self.DEFAULT_PARSER = "textfsm"
+        # each key corresponds to the getter name
+        # values are a list of sources for that getter
+        # each source must include a 'cmd' to run
+        # each source may specify one or more parsing engines
+        # to parse the 'cmd' with.
+        # each of these may have one or more templates to try.
+        # For each (getter, parser) combination, netbane will
+        # return at most one parsed result.
         self.SOURCES = {
             "system_facts": [
                 {
-                    #"source": "cmd",
+                    # the only required key for each getter is 'cmd'
+                    # the 'cmd' will be parsed by DEFAULT_PARSER using
+                    # default options for that parser.
                     "cmd": "show version",
-                    #"parser": "textfsm",
-                    #"templates": [
-                    #    'ntc_templates',
-                    #],
                 },
                 {
-                    #"source": "cmd",
+                    # if we want to use a different parser or parsing
+                    # options, set them like this:
                     "cmd": "show boot",
-                    #"parser": "textfsm",
-                    #"templates": [
-                    #    "ntc_templates",
-                    #],
+                    "parsers": [
+                        # genie does not support any options,
+                        # so we can pass it as a string.
+                        "genie",
+                        # we can pass textfsm as a string to use
+                        # default settings, or as a dict to customize.
+                        # the key is the parsing engine, value is
+                        # a list of templates to try, stopping at the first
+                        # one that works.
+                        {
+                            "textfsm": [
+                                # this will try the default ntc_template for
+                                # `show boot`
+                                "ntc_templates",
+                                # if that doesn't work (returns an empty list),
+                                # try this custom template
+                                # "templates/textfsm/my_custom_template.textfsm",
+                            ]
+                        },
+                    ],
                 },
             ],
             "interface_facts": [
@@ -32,15 +54,15 @@ class NXOSDriver(CiscoDriver):
                     "source": "cmd",
                     "cmd": "show interface",
                     "parser": "textfsm",
-                    'templates': [
-                        'ntc_templates',
+                    "templates": [
+                        "ntc_templates",
                     ],
                 },
                 {
                     "source": "running_config",
                     "cmd": "show running-config",
                     "parser": "ciscoconfparse",
-                    'templates': None,
+                    "templates": None,
                 },
             ],
             "vlans": [
@@ -48,15 +70,17 @@ class NXOSDriver(CiscoDriver):
                     "source": "cmd",
                     "cmd": "show vlan",
                     "parser": "textfsm",
-                    'templates': [
-                        'ntc_templates',
+                    "templates": [
+                        "ntc_templates",
                     ],
                 },
             ],
         }
 
+        super().__init__(*args, **kwargs)
+
     def _extract_system_facts(self):
-        shver = self.parsed['textfsm']["show_version"]
+        shver = self.parsed["textfsm"]["show_version"]
         self.system_facts = {
             "uptime": shver["uptime"],
             "uptime_sec": parse_uptime(shver["uptime"]),
