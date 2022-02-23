@@ -56,9 +56,8 @@ class BaseDriver(object):
 
         self._init_sources()
 
-        # completely unformatted facts discovered from device
-        # untouched response strings from command output
-        self.raw = {
+        # raw response objects from scrapli
+        self.responses = {
             "running_config": None,
         }
 
@@ -85,7 +84,9 @@ class BaseDriver(object):
         return self.conn.send_command(command)
 
     def parse_cli(self, command, parser="textfsm", template=None):
-        response = self.conn.send_command(command)
+        return self._parse_response(self.cli(command), parser=parser, template=template)
+
+    def _parse_response(self, response, parser="textfsm", template=None):
         if parser == "textfsm":
             if template is None or template == "ntc_templates":
                 return response.textfsm_parse_output()
@@ -180,46 +181,49 @@ class BaseDriver(object):
     def _sanitize_cmd(self, cmd):
         return cmd.replace(" ", "_")
 
-    def _fetch_parser_data(self, cmd, parser):
+    def _parse_source_response(self, cmd, response, parser):
+        key = self._sanitize_cmd(cmd)
         if isinstance(parser, str):
             parser_name = parser
-            output = self.parse_cli(cmd, parser=parser_name)
+            output = self._parse_response(response, parser=parser_name)
         elif isinstance(parser, dict):
             for parser_name, templates in parser.items():
                 for template in templates:
-                    output = self.parse_cli(cmd, parser=parser_name, template=template)
+                    output = self._parse_response(
+                        response, parser=parser_name, template=template
+                    )
                     if output:
                         break
 
         # un-nest single-element lists
         if isinstance(output, list) and len(output) == 1:
-             output = output[0]
+            output = output[0]
 
-        return output
+        self.parsed[parser_name][key] = output
 
     def _fetch(self, getter=None, force=False):
         sources = self.SOURCES[getter]
         for source in sources:
             cmd = source["cmd"]
-            parsers = source["parsers"]
+            cache = self.responses
             if source["source"] == "running_config":
-                local_cache = self.raw
-                cache_key = "running_config"
-                data = local_cache.get(cache_key)
-                if data is None or force:
-                    local_cache[cache_key] = self.cli(cmd)
+                key = "running_config"
             else:
-                for parser in parsers:
-                    if isinstance(parser, str):
-                        parser_name = parser
-                    elif isinstance(parser, dict):
-                        parser_name = list(parser.keys())[0]
-                    local_cache = self.parsed[parser_name]
-                    cache_key = self._sanitize_cmd(cmd)
-                    data = local_cache.get(cache_key)
-                    if data is None or force:
-                        output = self._fetch_parser_data(cmd, parser)
-                        local_cache[cache_key] = output
+                key = self._sanitize_cmd(cmd)
+            data = cache.get(key)
+            if data is None or force:
+                cache[key] = self.cli(cmd)
+
+    def _parse(self, getter=None):
+        sources = self.SOURCES[getter]
+        for source in sources:
+            cache = self.responses
+            key = self._sanitize_cmd(source["cmd"])
+            response = cache[key]
+            parsers = source["parsers"]
+            cmd = source['cmd']
+            for parser in parsers:
+                self._parse_source_response(cmd, response, parser)
 
     def _extract(self, getter=None):
         method = getattr(self, f"_extract_{getter}")
@@ -227,6 +231,7 @@ class BaseDriver(object):
 
     def get_system_facts(self, force=False):
         self._fetch("system_facts", force=force)
+        self._parse("system_facts")
         self._extract("system_facts")
         return self.system_facts
 
