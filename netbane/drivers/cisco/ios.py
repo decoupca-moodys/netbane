@@ -7,17 +7,23 @@ from netbane.utils.cisco.ios import int_time
 class IOSDriver(CiscoDriver):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.CMD_MAP = {
+       self.SOURCES = {
             "system_facts": [
                 {
                     "source": "cmd",
                     "cmd": "show version",
                     "parser": "textfsm",
+                    "templates": [
+                        'ntc_templates',
+                    ],
                 },
                 {
                     "source": "cmd",
                     "cmd": "show boot",
                     "parser": "textfsm",
+                    "templates": [
+                        "ntc_templates",
+                    ],
                 },
             ],
             "interface_facts": [
@@ -25,11 +31,15 @@ class IOSDriver(CiscoDriver):
                     "source": "cmd",
                     "cmd": "show interfaces",
                     "parser": "textfsm",
+                    'templates': [
+                        'ntc_templates',
+                    ],
                 },
                 {
                     "source": "running_config",
                     "cmd": "show running-config",
                     "parser": "ciscoconfparse",
+                    'templates': None,
                 },
             ],
             "vlans": [
@@ -37,6 +47,9 @@ class IOSDriver(CiscoDriver):
                     "source": "cmd",
                     "cmd": "show vlan",
                     "parser": "textfsm",
+                    'templates': [
+                        'ntc_templates',
+                    ],
                 },
             ],
         }

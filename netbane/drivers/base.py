@@ -163,7 +163,7 @@ class BaseDriver(object):
         return cmd.replace(" ", "_")
 
     def _fetch(self, getter=None, force=False):
-        sources = self.CMD_MAP[getter]
+        sources = self.SOURCES[getter]
         for source in sources:
             cmd = source["cmd"]
             parser = source["parser"]

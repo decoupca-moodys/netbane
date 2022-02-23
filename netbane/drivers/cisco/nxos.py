@@ -8,17 +8,63 @@ class NXOSDriver(CiscoDriver):
         super().__init__(*args, **kwargs)
 
         self.LIVE_INTERFACE_FACTS_CMD = "show interface"
+        self.SOURCES = {
+            "system_facts": [
+                {
+                    "source": "cmd",
+                    "cmd": "show version",
+                    "parser": "textfsm",
+                    "templates": [
+                        'ntc_templates',
+                    ],
+                },
+                {
+                    "source": "cmd",
+                    "cmd": "show boot",
+                    "parser": "textfsm",
+                    "templates": [
+                        "ntc_templates",
+                    ],
+                },
+            ],
+            "interface_facts": [
+                {
+                    "source": "cmd",
+                    "cmd": "show interface",
+                    "parser": "textfsm",
+                    'templates': [
+                        'ntc_templates',
+                    ],
+                },
+                {
+                    "source": "running_config",
+                    "cmd": "show running-config",
+                    "parser": "ciscoconfparse",
+                    'templates': None,
+                },
+            ],
+            "vlans": [
+                {
+                    "source": "cmd",
+                    "cmd": "show vlan",
+                    "parser": "textfsm",
+                    'templates': [
+                        'ntc_templates',
+                    ],
+                },
+            ],
+        }
 
-    def _normalize_system_facts(self):
-        facts = self.parsed["system_facts"]
-        return {
-            "uptime": facts["uptime"],
-            "uptime_sec": parse_uptime(facts["uptime"]),
-            "running_image": facts["boot_image"],
-            "code_version": facts["os"],
-            "serial": listify(facts["serial"]),
-            "reload_reason": facts["last_reboot_reason"],
-            "hardware": listify(facts["platform"]),
+    def _extract_system_facts(self):
+        shver = self.parsed['textfsm']["show_version"]
+        self.system_facts = {
+            "uptime": shver["uptime"],
+            "uptime_sec": parse_uptime(shver["uptime"]),
+            "running_image": shver["boot_image"],
+            "code_version": shver["os"],
+            "serial": listify(shver["serial"]),
+            "reload_reason": shver["last_reboot_reason"],
+            "hardware": listify(shver["platform"]),
         }
 
     def _normalize_live_interface_facts(self, interface_name):
