@@ -74,6 +74,8 @@ class BaseDriver(object):
         self.vlans = None
         self.system_facts = None
 
+        self.DEFAULT_TEMPLATE_PATH = 'templates/'
+
     def open(self):
         self.conn.open()
 
@@ -96,11 +98,13 @@ class BaseDriver(object):
             if template is not None:
                 raise ValueError("Genie does not support custom templates")
             return response.genie_parse_output()
-        elif parser == "ttf":
-            return response.ttf_parse_output(template=template)
+        elif parser == "ttp":
+            if template is None:
+                template = f'{self.DEFAULT_TEMPLATE_PATH}/ttp/{self.vendor}/{self.platform}/{self._sanitize_cmd(command)}.ttp'
+            return response.ttp_parse_output(template=template)
         else:
             raise ValueError(
-                f"Unknown parser: {parser}. Must use textfsm, genie, or ttf."
+                f"Unknown parser: {parser}. Must use textfsm, genie, or ttp."
             )
 
     def _init_sources(self):
@@ -235,13 +239,10 @@ class BaseDriver(object):
         self._extract("system_facts")
         return self.system_facts
 
-    def get_interface_facts(self):
-        if self.interface_facts is None:
-            self._fetch_running_config()
-            self._fetch_all_live_interface_facts()
-            self._normalize_all_interface_facts()
-            # self._collate_all_interface_facts()
-            self.interface_facts = self.normalized["all_interface_facts"]
+    def get_interface_facts(self, force=False):
+        self._fetch('interface_facts', force=force)
+        self._parse('interface_facts')
+        self._extract('interface_facts')
         return self.interface_facts
 
     def get_vlans(self):

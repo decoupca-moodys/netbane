@@ -3,12 +3,10 @@ from netbane.drivers.base import BaseDriver
 
 class CiscoDriver(BaseDriver):
     def __init__(self, *args, **kwargs):
+        self.vendor = 'cisco'
+
         super().__init__(*args, **kwargs)
 
-        self.GET_RUNNING_CONFIG_CMD = "show run"
-        self.LIVE_INTERFACE_NAME_KEY = "interface"
-        self.GET_VLANS_CMD = "show vlan"
-        self.GET_SYSTEM_FACTS_CMD = "show version"
 
     def _get_vlan_name(self, vlan_id):
         if vlan_id is None:

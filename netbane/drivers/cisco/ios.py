@@ -8,20 +8,9 @@ class IOSDriver(CiscoDriver):
     def __init__(self, *args, **kwargs):
         self.LIVE_INTERFACE_FACTS_CMD = "show interfaces"
         self.DEFAULT_PARSER = "textfsm"
-        # each key corresponds to the getter name
-        # values are a list of sources for that getter
-        # each source must include a 'cmd' to run
-        # each source may specify one or more parsing engines
-        # to parse the 'cmd' with.
-        # each of these may have one or more templates to try.
-        # For each (getter, parser) combination, netbane will
-        # return at most one parsed result.
         self.SOURCES = {
             "system_facts": [
                 {
-                    # the only required key for each getter is 'cmd'
-                    # the 'cmd' will be parsed by DEFAULT_PARSER using
-                    # default options for that parser.
                     "cmd": "show version",
                     "parsers": [
                         "genie",
@@ -29,12 +18,8 @@ class IOSDriver(CiscoDriver):
                     ],
                 },
                 {
-                    # if we want to use a different parser or parsing
-                    # options, set them like this:
                     "cmd": "show boot",
                     "parsers": [
-                        # genie does not support any options,
-                        # so we can pass it as a string.
                         "genie",
                         "textfsm",
                     ],
@@ -47,7 +32,7 @@ class IOSDriver(CiscoDriver):
                 {
                     "source": "running_config",
                     "cmd": "show running-config",
-                    "parser": "ciscoconfparse",
+                    "parser": "ttp",
                     "templates": None,
                 },
             ],
