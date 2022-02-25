@@ -1,4 +1,4 @@
-from netbane.drivers.cisco.generic import CiscoDriver
+from netbane.drivers.cisco.base import CiscoDriver
 from netbane.utils import listify
 from netbane.utils.cisco.generic import parse_uptime
 

@@ -100,7 +100,9 @@ class BaseDriver(object):
             return response.genie_parse_output()
         elif parser == "ttp":
             if template is None:
-                template = f'{self.DEFAULT_TEMPLATE_PATH}/ttp/{self.vendor}/{self.platform}/{self._sanitize_cmd(command)}.ttp'
+                cmd = response.channel_input
+                cmd = self._sanitize_cmd(cmd)
+                template = f'{self.DEFAULT_TEMPLATE_PATH}/ttp/{self.vendor}/{self.platform}/{cmd}.ttp'
             return response.ttp_parse_output(template=template)
         else:
             raise ValueError(
@@ -222,7 +224,11 @@ class BaseDriver(object):
         sources = self.SOURCES[getter]
         for source in sources:
             cache = self.responses
-            key = self._sanitize_cmd(source["cmd"])
+            # TODO: handle this more robustly
+            if 'config' in source['cmd']:
+                key = 'running_config'
+            else:
+                key = self._sanitize_cmd(source["cmd"])
             response = cache[key]
             parsers = source["parsers"]
             cmd = source["cmd"]

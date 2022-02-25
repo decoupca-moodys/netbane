@@ -20,8 +20,11 @@ netbane_args = {
 
 device = NetBane(**netbane_args)
 device.open()
-pprint(device.get_system_facts())
+#pprint(device.get_system_facts())
 #pprint(device.get_interface_facts())
+device._fetch('interface_facts')
+device._parse('interface_facts')
+#pprint(device.parsed['running_config'])
 import ipdb
 
 ipdb.set_trace()
