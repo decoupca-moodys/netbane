@@ -1,4 +1,4 @@
-from netbane.drivers.cisco.generic import CiscoDriver
+from netbane.drivers.cisco.base import CiscoDriver
 from netbane.utils import listify
 from netbane.utils.cisco.generic import parse_uptime
 from netbane.utils.cisco.ios import int_time
@@ -13,14 +13,14 @@ class IOSDriver(CiscoDriver):
                 {
                     "cmd": "show version",
                     "parsers": [
-                        "genie",
+                        #"genie",
                         "textfsm",
                     ],
                 },
                 {
                     "cmd": "show boot",
                     "parsers": [
-                        "genie",
+                        #"genie",
                         "textfsm",
                     ],
                 },
@@ -32,7 +32,7 @@ class IOSDriver(CiscoDriver):
                 {
                     "source": "running_config",
                     "cmd": "show running-config",
-                    "parser": "ttp",
+                    "parsers": ["ttp"],
                     "templates": None,
                 },
             ],
