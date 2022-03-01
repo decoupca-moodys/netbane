@@ -1,7 +1,7 @@
 from ttp import ttp
 from rich.pretty import pprint
 
-config_file = '../../ansible/config_backups/FGR/RFGR02CR01.cfg'
+config_file = 'test.cfg'
 template_file = '../templates/ttp/cisco/ios/show_running-config.ttp'
 
 with open(config_file) as fh:
