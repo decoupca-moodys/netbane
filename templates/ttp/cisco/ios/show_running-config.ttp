@@ -5,7 +5,8 @@ interface {{ interface }}
 {{ access_vlan | set(None) }}
 {{ description | set(None) }}
 {{ duplex | set(None) }}
-{{ is_enabled | set(False) }}
+##{{ helper_addresses | set(None) }}
+{{ is_enabled | set(True) }}
 {{ mode | set(None) }}
 {{ negotiation | set(None) }}
 {{ primary_ipv4 | set(None) }}
@@ -21,15 +22,30 @@ interface {{ interface }}
  duplex {{ duplex }}
  ip address {{ primary_ipv4 }} {{ primary_ipv4_netmask }}
  negotiation {{ negotiation }}
- no shutdown {{ is_enabled | set(True) }}
+ shutdown {{ is_enabled | set(False) }}
  speed {{ speed }}
  no switchport {{ mode | set('routed') }}
- switchport access vlan {{ access_vlan }}
+ switchport access vlan {{ access_vlan | to_int }}
  switchport mode {{ mode }}
  switchport trunk allowed vlan {{ trunk_allowed_vlans | _start_ | unrange(rangechar='-', joinchar=',') | split(',') }}
- switchport trunk native vlan {{ trunk_native_vlan }}
- switchport voice vlan {{ voice_vlan }}
+ switchport trunk native vlan {{ trunk_native_vlan | to_int }}
+ switchport voice vlan {{ voice_vlan | to_int }}
  vrf forwarding {{ vrf }}
+ <group name="helper_addresses" itemize="ip">
+ ip helper-address {{ ip }}
+ </group>
+ <group name="pim">
+ ip pim {{ mode }}
+ ip pim dr-priority {{ dr_priority | to_int }}
+ </group>
+ <group name="ospf">
+ ip ospf priority {{ priority | to_int }}
+ ip ospf cost {{ cost | to_int }}
+  <group name="authentication">
+ ip ospf authentication {{ type }}
+ ip ospf message-digest-key {{ key_id | to_int }} md5 7 {{ key_hash }}
+  </group>
+ </group>
 </group>
 
 <group name="vlans">
@@ -51,7 +67,7 @@ no ip http secure-server{{ enabled | set(False) }}
 <group name="global">
 {{ hostname | set(None) }}
 hostname {{ hostname | re(".+") }}
-<group name="ip">
+ <group name="ip">
 {{ domain_name | set(None) }}
 {{ cef | set(False) }}
 {{ subnet_zero | set(False) }}
@@ -59,11 +75,11 @@ hostname {{ hostname | re(".+") }}
 {{ gratuitous_arps | set(False) }}
 {{ classless | set(False) }}
 ip domain name {{ domain_name }}
-ip subnet-zero{{ subnet_zero | set(False) }}
-ip cef{{ cef | set(True) }}
-ip subnet-zero{{ subnet_zero | set(True) }}
-ip classless{{ classless | set(True) }}
-</group>
+ip subnet-zero {{ subnet_zero | set(False) }}
+ip cef {{ cef | set(True) }}
+ip subnet-zero {{ subnet_zero | set(True) }}
+ip classless {{ classless | set(True) }}
+ </group>
 </group>
 
 <group name="services">
@@ -76,14 +92,16 @@ ip classless{{ classless | set(True) }}
 {{ sequence_numbers | set(False) }}
 {{ tcp_keepalives_in | set(False) }}
 {{ tcp_keepalives_out | set(False) }}
-service call-home{{ call_home | set(True) }}
-service compress-config{{ compress_config | set(True) }}
-service internal{{ internal | set(True) }}
-service nagle{{ nagle | set(True) }}
-service password-encryption{{ password_encryption | set(True) }}
-service sequence-numbers{{ sequence_numbers | set(True) }}
-service tcp-keepalives-in{{ tcp_keepalives_in | set(True) }}
-service tcp-keepalives-out{{ tcp_keepalives_out | set(True) }}
+service call-home {{ call_home | set(True) }}
+service compress-config {{ compress_config | set(True) }}
+service internal {{ internal | set(True) }}
+service linenumber{{ linenumber | set(True) }}
+service nagle {{ nagle | set(True) }}
+service password-encryption {{ password_encryption | set(True) }}
+service sequence-numbers {{ sequence_numbers | set(True) }}
+service tcp-keepalives-in {{ tcp_keepalives_in | set(True) | _start_ }}
+service tcp-keepalives-out {{ tcp_keepalives_out | set(True) }}
+!{{ _end_ }}
 </group>
 
 <group name="lldp">
