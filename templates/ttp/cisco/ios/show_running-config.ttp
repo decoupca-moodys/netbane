@@ -21,43 +21,70 @@ interface {{ interface }}
  description {{ description | ORPHRASE }}
  duplex {{ duplex }}
  negotiation {{ negotiation }}
+ no switchport {{ mode | set('routed') }}
  shutdown {{ enabled | set(False) }}
  speed {{ speed | to_int }}
- no switchport {{ mode | set('routed') }}
  switchport access vlan {{ access_vlan | to_int }}
- switchport mode {{ mode | default('access') }}
- switchport trunk allowed vlan {{ trunk_allowed_vlans | _start_ | unrange(rangechar='-', joinchar=',') | split(',') }}
- switchport trunk native vlan {{ trunk_native_vlan | to_int }}
+ switchport mode {{ mode }}
  switchport voice vlan {{ voice_vlan | to_int }}
  vrf forwarding {{ vrf }}
- <group name="channel_group">
+<group name="trunk">
+ switchport trunk allowed vlan {{ allowed_vlan | _start_ | unrange(rangechar='-', joinchar=',') | split(',') }} ## TODO: to_int
+ switchport trunk native vlan {{ native_vlan | to_int }}
+</group>
+<group name="channel_group">
  channel-group {{ group_id | to_int }} mode {{ mode }}
- </group>
- <group name="service_policy">
+</group>
+<group name="service_policy">
  service-policy input {{ input }}
  service-policy output {{ output }}
- </group>
- <group name="logging_event.{{ event }}**" itemize="enabled">
- logging event {{ event }} {{ enabled | set(True) }} ## TODO: fix this
- </group>
- <group name="ip">
- ip address {{ primary_ipv4 }} {{ primary_ipv4_netmask }}
- </group>
- <group name="ip.helper_address" itemize="ip">
+</group>
+<group name="logging_event.{{ event }}**" itemize="enabled">
+ logging event {{ event }} {{ enabled | set(True) }} ## TODO: fix
+</group>
+<group name="port_security**">
+ switchport port-security {{ enabled | set(True) | _start_ }}
+ switchport port-security maximum {{ maximum | to_int | _start_ }}
+ switchport port-security violation {{ violation | _start_ }}
+</group>
+<group name="port_security.aging**">
+ switchport port-security aging time {{ time | to_int | _start_ }}
+ switchport port-security aging type {{ type | _start_ }}
+</group>
+<group name="spanning_tree**">
+ spanning-tree portfast {{ portfast | set(True) | _start_ }}
+ spanning-tree bpduguard disable {{ bpduguard | set(False) | _start_}}
+</group>
+<group name="ip**">
+ no ip redirects {{ redirects | set(False) }}
+ no ip unreachables {{ unreachables | set(False) }}
+ no ip proxy-arp {{ proxy_arp | set(False) }}
+</group>
+<group name="ip.ipv4.primary**">
+ ip address {{ address }} {{ netmask }}
+</group>
+<group name="ip.ipv4.secondary">
+ ip address {{ address }} {{ netmask }} secondary
+</group>
+<group name="ip.helper_address" itemize="ip">
  ip helper-address {{ ip }}
- </group>
- <group name="ip.pim">
- ip pim {{ mode }}
+</group>
+<group name="ip.pim**">
  ip pim dr-priority {{ dr_priority | to_int }}
- </group>
- <group name="ip.ospf">
- ip ospf priority {{ priority | to_int }}
- ip ospf cost {{ cost | to_int }}
- <group name="ip.ospf.authentication**">
+ ip pim {{ mode }}
+</group>
+<group name="ip.ospf**">
+ ip ospf network {{ network | _start_ }}
+ ip ospf priority {{ priority | to_int | _start_ }}
+ ip ospf cost {{ cost | to_int | _start_ }}
+</group>
+<group name="ip.ospf.authentication**">
  ip ospf authentication {{ type }}
  ip ospf message-digest-key {{ key_id | to_int }} md5 7 {{ key_hash }}
- </group>
- </group>
+</group>
+<group name="ip.igmp**">
+ ip igmp access-group {{ access_group }}
+</group>
 </group>
 
 <group name="vlans">
@@ -147,16 +174,6 @@ vtp mode {{ mode }}
 vtp domain {{ domain }}
 </group>
 
-<group name="ntp">
-ntp server {{ server }}
-</group>
-
-<group name="management.enable_secret">
-{{ secret | set(None) }}
-{{ password | set(None) }}
-enable secret {{ secret }}
-enable password {{ password }}
-</group>
 
 <group name="management.logging">
 logging facility {{ facility }}
@@ -167,46 +184,9 @@ logging {{ destination }}
 </group>
 
 
-<group name="management.line.{{ vty }}">
-line {{ vty | re(".+") | record(vty) }}
- {{ password | set(None) }}
- logging {{ logging }}
- stopbits {{ stopbits }}
- login {{ local }}
- length {{ value }}
- transport input {{ transport_input }}
- transport output {{ transport_output }}
- session-timeout {{ timeout }}
- password {{ password }}
-</group>
-
-<group name="security.access_lists">
-{{ src | set(None) }}
-{{ dest | set(None) }}
-{{ type | set(None) }}
-{{ src_proto | set(None) }}
-{{ dest_proto | set(None) }}
-{{ src_wildcard | set(None) }}
-{{ dest_wildcard | set(None) }}
-access-list {{ id | _start_ }} {{ type }} {{ src_proto }} host {{ src }} eq {{ dest_proto }} {{ dest }}
-access-list {{ id | _start_ }} {{ type }} {{ src_proto }} host {{ src }} {{ dest }} eq {{ dest_proto }}
-access-list {{ id | _start_ }} {{ type }} {{ src_proto }} host {{ src }} {{ dest }}
-access-list {{ id | _start_ }} {{ type }} {{ src_proto }} host {{ src }} eq {{ dest_proto }} {{ dest }}
-access-list {{ id | _start_ }} {{ type }} {{ src_proto }} {{ src }} {{ dest }}
-access-list {{ id | _start_ }} {{ type }} ip {{ src }} {{ src_wildcard }} {{ dest }} {{ dest_wildcard }}
-</group>
-
 <group name="security.aaa">
 {{ new_model | set(False) }}
-aaa new-model{{ new_model | set(True) }}
-</group>
-
-<group name="security.radius">
-radius-server host {{ host }} auth-port {{ auth_port }} acct-port {{ acct_port }} key {{ key }}
-</group>
-
-<group name="security.tacacs">
-tacacs-server host {{ server }} key 7 {{key}}
+aaa new-model {{ new_model | set(True) }}
 </group>
 
 <group name="management.local_users">
