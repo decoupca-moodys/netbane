@@ -1,10 +1,11 @@
-from netbane.plugins.nornir.connections import NetBane
-from netbane.plugins.nornir.inventory.netbox import netbox_transform
-from netbane.plugins.nornir.tasks.netbane_get import netbane_get
 from nornir import InitNornir
 from nornir.core.plugins.connections import ConnectionPluginRegister
 from nornir.core.plugins.inventory import TransformFunctionRegister
 from nornir_utils.plugins.functions import print_result
+
+from netbane.plugins.nornir.connections import NetBane
+from netbane.plugins.nornir.inventory.netbox import netbox_transform
+from netbane.plugins.nornir.tasks.netbane_get import netbane_get
 
 TransformFunctionRegister.register("netbox_transform", netbox_transform)
 ConnectionPluginRegister.register("netbane", NetBane)

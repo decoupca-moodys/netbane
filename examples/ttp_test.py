@@ -1,11 +1,11 @@
-from ttp import ttp
 from rich.pretty import pprint
+from ttp import ttp
 
-config_file = 'test.cfg'
-template_file = '../templates/ttp/cisco/ios/show_running-config.ttp'
+config_file = "test.cfg"
+template_file = "../templates/ttp/cisco/ios/show_running-config.ttp"
 
 with open(config_file) as fh:
-    data  = fh.read()
+    data = fh.read()
 
 with open(template_file) as fh:
     template = fh.read()

@@ -1,7 +1,7 @@
 INTERFACE_FACTS = {
     "access_vlan": None,
     "description": None,
-    "interface": None,
+    "name": None,
     "ipv4_primary": None,
     "ipv4_secondary": None,
     "is_enabled": None,
@@ -19,6 +19,7 @@ INTERFACE_FACTS = {
     "mode": None,
     "mtu": None,
     "native_vlan": None,
+    "voice_vlan": None,
 }
 
 

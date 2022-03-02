@@ -1,9 +1,9 @@
 import copy
 import re
 
-from scrapli.helper import textfsm_parse
 from ciscoconfparse import CiscoConfParse
 from scrapli import Scrapli
+from scrapli.helper import textfsm_parse
 
 from netbane import spec
 
@@ -71,10 +71,11 @@ class BaseDriver(object):
 
         # facts ready for use, normalized and collated
         self.interface_facts = None
+        self.interfaces = None
         self.vlans = None
         self.system_facts = None
 
-        self.DEFAULT_TEMPLATE_PATH = 'templates/'
+        self.DEFAULT_TEMPLATE_PATH = "templates/"
 
     def open(self):
         self.conn.open()
@@ -102,7 +103,7 @@ class BaseDriver(object):
             if template is None:
                 cmd = response.channel_input
                 cmd = self._sanitize_cmd(cmd)
-                template = f'{self.DEFAULT_TEMPLATE_PATH}/ttp/{self.vendor}/{self.platform}/{cmd}.ttp'
+                template = f"{self.DEFAULT_TEMPLATE_PATH}/ttp/{self.vendor}/{self.platform}/{cmd}.ttp"
             return response.ttp_parse_output(template=template)
         else:
             raise ValueError(
@@ -187,8 +188,9 @@ class BaseDriver(object):
     def _sanitize_cmd(self, cmd):
         return cmd.replace(" ", "_")
 
-    def _parse_source_response(self, cmd, response, parser):
-        key = self._sanitize_cmd(cmd)
+    def _parse_source_response(self, cmd, response, parser, key=None):
+        if key is None:
+            key = self._sanitize_cmd(cmd)
         if isinstance(parser, str):
             parser_name = parser
             output = self._parse_response(response, parser=parser_name)
@@ -225,30 +227,30 @@ class BaseDriver(object):
         for source in sources:
             cache = self.responses
             # TODO: handle this more robustly
-            if 'config' in source['cmd']:
-                key = 'running_config'
+            if "config" in source["cmd"]:
+                key = "running_config"
             else:
                 key = self._sanitize_cmd(source["cmd"])
             response = cache[key]
             parsers = source["parsers"]
             cmd = source["cmd"]
             for parser in parsers:
-                self._parse_source_response(cmd, response, parser)
+                self._parse_source_response(cmd, response, parser, key)
 
-    def _extract(self, getter=None):
+    def _extract(self, getter=None, *args, **kwargs):
         method = getattr(self, f"_extract_{getter}")
-        method()
+        return method(*args, **kwargs)
 
     def get_system_facts(self, force=False):
         self._fetch("system_facts", force=force)
         self._parse("system_facts")
-        self._extract("system_facts")
+        self.system_facts = self._extract("system_facts")
         return self.system_facts
 
     def get_interface_facts(self, force=False):
-        self._fetch('interface_facts', force=force)
-        self._parse('interface_facts')
-        self._extract('interface_facts')
+        self._fetch("interface_facts", force=force)
+        self._parse("interface_facts")
+        self.interface_facts = self._extract("interface_facts")
         return self.interface_facts
 
     def get_vlans(self):
