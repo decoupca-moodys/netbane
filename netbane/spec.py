@@ -2,6 +2,8 @@ INTERFACE_FACTS = {
     "access_vlan": None,
     "description": None,
     "interface": None,
+    "ipv4_primary": None,
+    "ipv4_secondary": None,
     "is_enabled": None,
     "is_ethernet": None,
     "is_fixed": None,
@@ -17,8 +19,6 @@ INTERFACE_FACTS = {
     "mode": None,
     "mtu": None,
     "native_vlan": None,
-    "primary_ip4": None,  # {'address': '', 'prefix_length': 0, 'cidr': '' },
-    "secondary_ip4": None,
 }
 
 

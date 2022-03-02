@@ -6,7 +6,6 @@ interface {{ interface }}
 ##{{ description | set(None) }}
 ##{{ duplex | set(None) }}
 ##{{ helper_addresses | set(None) }}
-{{ enabled | set(True) }}
 ##{{ mode | set(None) }}
 ##{{ negotiation | set(None) }}
 ##{{ primary_ipv4 | set(None) }}
@@ -21,27 +20,28 @@ interface {{ interface }}
  channel-group {{ channel_group_id | to_int }} mode {{ channel_group_mode }}
  description {{ description | ORPHRASE }}
  duplex {{ duplex }}
- no ip proxy-arp {{ proxy_arp | set(False) }}
- no ip redirects {{ redirects | set(False) }}
- no ip unreachables {{ unreachables | set(False) }}
- no shutdown {{ enabled | set(False) }}
- no switchport {{ mode | set('routed') }}
+ no ip proxy-arp {{ ip_proxy_arp | set(False) }}
+ no ip redirects {{ ip_redirects | set(False) }}
+ no ip unreachables {{ ip_unreachables | set(False) }}
+ no switchport {{ switchport_enabled | set(False) }}
+ power inline {{ power_inline }}
  service-policy input {{ service_policy_input }}
  service-policy output {{ service_policy_output }}
- shutdown {{ enabled | set(False) }}
- spanning-tree bpduguard disable {{ spanning_tree_bpduguard | set(False) }}
- spanning-tree portfast {{ spanning_tree_portfast | set(True) }}
+ shutdown {{ shutdown | set(True) }}
+ spanning-tree bpduguard disable {{ spanning_tree_bpduguard_enabled | set(False) }}
+ spanning-tree portfast {{ spanning_tree_portfast_enabled | set(True) }}
  speed {{ speed | to_int }}
- switchport access vlan {{ access_vlan | to_int }}
- switchport mode {{ mode }}
- switchport port-security aging time {{ port_security_aging_time | to_int }}
- switchport port-security aging type {{ port_security_aging_type }}
- switchport port-security maximum {{ port_security_maximum | to_int }}
- switchport port-security violation {{ port_security_violation }}
- switchport port-security {{ port_security_enabled | set(True) }}
- switchport trunk native vlan {{ trunk_native_vlan | to_int }}
- switchport trunk allowed vlan {{ trunk_allowed_vlan | unrange(rangechar='-', joinchar=',') | split(',') }}
- switchport voice vlan {{ voice_vlan | to_int }}
+ switchport access vlan {{ switchport_access_vlan | to_int }}
+ switchport mode {{ switchport_mode }}
+ switchport nonegotiate {{ switchport_nonegotiate | set(True) }}
+ switchport port-security aging time {{ switchport_port_security_aging_time | to_int }}
+ switchport port-security aging type {{ switchport_port_security_aging_type }}
+ switchport port-security maximum {{ switchport_port_security_maximum | to_int }}
+ switchport port-security violation {{ switchport_port_security_violation }}
+ switchport port-security {{ switchport_port_security_enabled | set(True) }}
+ switchport trunk allowed vlan {{ switchport_trunk_allowed_vlan | unrange(rangechar='-', joinchar=',') | split(',') }}
+ switchport trunk native vlan {{ switchport_trunk_native_vlan | to_int }}
+ switchport voice vlan {{ switchport_voice_vlan | to_int }}
  vrf forwarding {{ vrf }}
 <group name="ipv4_primary">
  ip address {{ address }} {{ netmask }}
@@ -49,17 +49,17 @@ interface {{ interface }}
 <group name="ipv4_secondary*">
  ip address {{ address }} {{ netmask }} secondary
 </group>
-<group name="helper_address" itemize="ip">
+<group name="ip_helper_address" itemize="ip">
  ip helper-address {{ ip }}
 </group>
- ip pim dr-priority {{ pim_dr_priority | to_int }}
- ip pim {{ pim_mode }}
- ip ospf network {{ ospf_network }}
- ip ospf priority {{ ospf_priority | to_int }}
- ip ospf cost {{ ospf_cost | to_int }}
- ip ospf authentication {{ ospf_auth_type }}
- ip ospf message-digest-key {{ ospf_auth_key_id | to_int }} md5 7 {{ ospf_auth_key_hash }}
- ip igmp access-group {{ igmp_access_group }}
+ ip pim dr-priority {{ ip_pim_dr_priority | to_int }}
+ ip pim {{ ip_pim_mode }}
+ ip ospf network {{ ip_ospf_network }}
+ ip ospf priority {{ ip_ospf_priority | to_int }}
+ ip ospf cost {{ ip_ospf_cost | to_int }}
+ ip ospf authentication {{ ip_ospf_auth_type }}
+ ip ospf message-digest-key {{ ip_ospf_auth_key_id | to_int }} md5 7 {{ ip_ospf_auth_key_hash }}
+ ip igmp access-group {{ ip_igmp_access_group }}
 </group>
 
 <group name="vlans">
