@@ -1,50 +1,62 @@
 ## adapted from https://github.com/tbotnz/ios-show-run-ttp
 
-<group name="interfaces">
+<group name="interfaces.{{ interface }}**">
 interface {{ interface }}
-{{ access_vlan | set(None) }}
-{{ description | set(None) }}
-{{ duplex | set(None) }}
+##{{ access_vlan | set(None) }}
+##{{ description | set(None) }}
+##{{ duplex | set(None) }}
 ##{{ helper_addresses | set(None) }}
-{{ is_enabled | set(True) }}
-{{ mode | set(None) }}
-{{ negotiation | set(None) }}
-{{ primary_ipv4 | set(None) }}
-{{ primary_ipv4_netmask | set(None) }}
-{{ secondary_ipv4 | set(None) }}
-{{ secondary_ipv4_netmask | set(None) }}
-{{ speed | set(None) }}
-{{ trunk_allowed_vlans | set(None) }}
-{{ trunk_native_vlan | set(None) }}
-{{ voice_vlan | set(None) }}
-{{ vrf | set(None) }}
- description {{ description | re('.+') }}
+{{ enabled | set(True) }}
+##{{ mode | set(None) }}
+##{{ negotiation | set(None) }}
+##{{ primary_ipv4 | set(None) }}
+##{{ primary_ipv4_netmask | set(None) }}
+##{{ secondary_ipv4 | set(None) }}
+##{{ secondary_ipv4_netmask | set(None) }}
+##{{ speed | set(None) }}
+##{{ trunk_allowed_vlans | set(None) }}
+##{{ trunk_native_vlan | set(None) }}
+##{{ voice_vlan | set(None) }}
+##{{ vrf | set(None) }}
+ description {{ description | ORPHRASE }}
  duplex {{ duplex }}
- ip address {{ primary_ipv4 }} {{ primary_ipv4_netmask }}
  negotiation {{ negotiation }}
- shutdown {{ is_enabled | set(False) }}
- speed {{ speed }}
+ shutdown {{ enabled | set(False) }}
+ speed {{ speed | to_int }}
  no switchport {{ mode | set('routed') }}
  switchport access vlan {{ access_vlan | to_int }}
- switchport mode {{ mode }}
+ switchport mode {{ mode | default('access') }}
  switchport trunk allowed vlan {{ trunk_allowed_vlans | _start_ | unrange(rangechar='-', joinchar=',') | split(',') }}
  switchport trunk native vlan {{ trunk_native_vlan | to_int }}
  switchport voice vlan {{ voice_vlan | to_int }}
  vrf forwarding {{ vrf }}
- <group name="helper_addresses" itemize="ip">
+ <group name="channel_group">
+ channel-group {{ group_id | to_int }} mode {{ mode }}
+ </group>
+ <group name="service_policy">
+ service-policy input {{ input }}
+ service-policy output {{ output }}
+ </group>
+ <group name="logging_event.{{ event }}**" itemize="enabled">
+ logging event {{ event }} {{ enabled | set(True) }} ## TODO: fix this
+ </group>
+ <group name="ip">
+ ip address {{ primary_ipv4 }} {{ primary_ipv4_netmask }}
+ </group>
+ <group name="ip.helper_address" itemize="ip">
  ip helper-address {{ ip }}
  </group>
- <group name="pim">
+ <group name="ip.pim">
  ip pim {{ mode }}
  ip pim dr-priority {{ dr_priority | to_int }}
  </group>
- <group name="ospf">
+ <group name="ip.ospf">
  ip ospf priority {{ priority | to_int }}
  ip ospf cost {{ cost | to_int }}
-  <group name="authentication">
+ <group name="ip.ospf.authentication**">
  ip ospf authentication {{ type }}
  ip ospf message-digest-key {{ key_id | to_int }} md5 7 {{ key_hash }}
-  </group>
+ </group>
  </group>
 </group>
 
@@ -75,7 +87,7 @@ hostname {{ hostname | re(".+") }}
 {{ gratuitous_arps | set(False) }}
 {{ classless | set(False) }}
 ip domain name {{ domain_name }}
-ip subnet-zero {{ subnet_zero | set(False) }}
+ip subnet-zero {{ subnet_zero | set(True) }}
 ip cef {{ cef | set(True) }}
 ip subnet-zero {{ subnet_zero | set(True) }}
 ip classless {{ classless | set(True) }}
