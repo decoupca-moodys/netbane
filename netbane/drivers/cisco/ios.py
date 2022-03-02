@@ -59,19 +59,18 @@ class IOSDriver(CiscoDriver):
             "uptime_sec": parse_uptime(shver["uptime"]),
         }
 
-    def _extract_interface_facts(self):
-        pass
-
-    def _normalize_live_interface_facts(self, interface_name):
-        """Extracts the facts we need for a given interface from live facts"""
-        interface = self._get_live_interface_facts(interface_name)
+    def _extract_interface_facts(self, interface_name):
+        cfg = self._get_interface_config(interface_name)
+        data = self._get_interface_data(interface_name)
         return {
-            "description": interface["description"],
-            "interface": interface["interface"],
-            "is_enabled": "disabled" not in interface["protocol_status"],
-            "is_up": interface["link_status"].lower() == "up",
-            "last_used_sec": int_time(interface["last_output"]),
-            "last_used": interface["last_output"],
-            "mac": interface["address"],
-            "mtu": int(interface["mtu"]),
+            "description": data['description'] or cfg['description'],
+            'interface': interface_name,
+            'is_enabled': 'disabled' not in data['protocol_status'],
+            'is_up': data['link_status'].lower() == 'up',
+            'last_used': data['last_output'],
+            'last_used_sec': int_time(data['last_output']),
+            'mac': data['mac'],
+            'mtu': int(data['mtu']),
+            'mode': cfg['mode'] or data['mode']
         }
+
