@@ -9,6 +9,12 @@ class IOSDriver(CiscoDriver):
         self.LIVE_INTERFACE_FACTS_CMD = "show interfaces"
         self.DEFAULT_PARSER = "textfsm"
         self.SOURCES = {
+            "ap_facts": [
+                {
+                    "cmd": "show ap summary",
+                    "parsers": ["textfsm"],
+                },
+            ],
             "system_facts": [
                 {
                     "cmd": "show version",
@@ -56,6 +62,10 @@ class IOSDriver(CiscoDriver):
             for x in self.parsed["textfsm"]["show_interfaces"]
             if x["interface"] == interface_name
         ][0]
+
+    def _extract_ap_facts(self):
+        sh_ap_summ = self.parsed["textfsm"]["show_ap_summary"]
+        return sh_ap_summ
 
     def _extract_system_facts(self):
         shver = self.parsed["textfsm"]["show_version"]

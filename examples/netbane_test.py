@@ -4,7 +4,7 @@ from rich.pretty import pprint
 from netbane import NetBane
 
 nxos_host = "172.18.0.5"
-ios_host = "172.18.34.129"
+ios_host = "172.18.58.4"
 junos_host = "172.25.22.10"
 
 netbane_args = {
@@ -24,7 +24,7 @@ device.open()
 # pprint(device.get_interface_facts())
 # device._fetch("interface_facts")
 # device._parse("interface_facts")
-pprint(device.get_interface_facts())
+pprint(device.get_ap_facts())
 # pprint(device.parsed['running_config'])
 import ipdb
 

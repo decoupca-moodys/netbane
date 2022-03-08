@@ -1,6 +1,6 @@
 import copy
 import re
-
+import os
 from ciscoconfparse import CiscoConfParse
 from scrapli import Scrapli
 from scrapli.helper import textfsm_parse
@@ -75,7 +75,7 @@ class BaseDriver(object):
         self.vlans = None
         self.system_facts = None
 
-        self.DEFAULT_TEMPLATE_PATH = "templates/"
+        self.DEFAULT_TEMPLATE_PATH = f"templates/{self.vendor}/{self.platform}"
 
     def open(self):
         self.conn.open()
@@ -90,10 +90,23 @@ class BaseDriver(object):
         return self._parse_response(self.cli(command), parser=parser, template=template)
 
     def _parse_response(self, response, parser="textfsm", template=None):
+        cmd = response.channel_input
+        cmd = self._sanitize_cmd(cmd)
         if parser == "textfsm":
-            if template is None or template == "ntc_templates":
+            if template is None:
+                # check for a custom template
+                custom_template = f"{self.DEFAULT_TEMPLATE_PATH}/{self.vendor}_{self.platform}_{cmd}.textfsm"
+                if os.path.exists(custom_template):
+                    return textfsm_parse(custom_template, response.result)
+                else:
+                    # fall back to ntc_templates
+                    return response.textfsm_parse_output()
+            elif template == "ntc_templates":
                 return response.textfsm_parse_output()
             else:
+                # use default template path if absolute path not provided
+                if "/" not in template:
+                    template = f"{self.DEFAULT_TEMPLATE_PATH}/{template}"
                 return textfsm_parse(template, response.result)
         elif parser == "genie":
             if template is not None:
@@ -101,9 +114,7 @@ class BaseDriver(object):
             return response.genie_parse_output()
         elif parser == "ttp":
             if template is None:
-                cmd = response.channel_input
-                cmd = self._sanitize_cmd(cmd)
-                template = f"{self.DEFAULT_TEMPLATE_PATH}/ttp/{self.vendor}/{self.platform}/{cmd}.ttp"
+                template = f"{self.DEFAULT_TEMPLATE_PATH}/{cmd}.ttp"
             return response.ttp_parse_output(template=template)
         else:
             raise ValueError(
@@ -240,6 +251,12 @@ class BaseDriver(object):
     def _extract(self, getter=None, *args, **kwargs):
         method = getattr(self, f"_extract_{getter}")
         return method(*args, **kwargs)
+
+    def get_ap_facts(self, force=False):
+        self._fetch("ap_facts", force=force)
+        self._parse("ap_facts")
+        self.ap_facts = self._extract("ap_facts")
+        return self.ap_facts
 
     def get_system_facts(self, force=False):
         self._fetch("system_facts", force=force)
