@@ -6,12 +6,13 @@ from netbane import NetBane
 nxos_host = "172.18.0.5"
 ios_host = "172.18.58.4"
 junos_host = "172.25.22.10"
+aireos_host = '10.136.186.11'
 
 netbane_args = {
-    "host": ios_host,
+    "host": aireos_host,
     "username": config.NETWORK_USERNAME,
     "password": config.NETWORK_PASSWORD,
-    "platform": "ios",
+    "platform": "aireos",
     "optional_args": {
         "ssh_config_file": "~/.ssh/config",
         "default_timeout": 60,

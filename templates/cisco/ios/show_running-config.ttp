@@ -63,8 +63,8 @@ interface {{ interface }}
 </group>
 
 <group name="vlans">
-vlan {{ vlan_id }}
- name {{ vlan_name }}
+vlan {{ id | to_int }}
+ name {{ name }}
 </group>
 
 <group name="global.http_server">
@@ -165,7 +165,7 @@ aaa new-model {{ new_model | set(True) }}
 </group>
 
 <group name="management.local_users">
-username {{ username }} privilege {{ priv }} secret {{ secret_type }} {{ secret }}
+username {{ username }} privilege {{ priv | to_int }} secret {{ secret_type | to_int }} {{ secret }}
 </group>
 
 

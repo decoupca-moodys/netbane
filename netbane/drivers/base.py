@@ -8,11 +8,12 @@ from scrapli.helper import textfsm_parse
 from netbane import spec
 
 SCRAPLI_PLATFORM_MAP = {
+    "aireos": "cisco_aireos",
     "eos": "arista_eos",
     "ios": "cisco_iosxe",
     "iosxr": "cisco_iosxr",
-    "nxos": "cisco_nxos",
     "junos": "juniper_junos",
+    "nxos": "cisco_nxos",
 }
 
 # Args to pass to CiscoConfParse
