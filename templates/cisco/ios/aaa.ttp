@@ -1,0 +1,49 @@
+<group name="aaa">
+{{ new_model | set(False) }}
+aaa new-model {{ new_model | set(True) }}
+aaa session-id {{ session_id }}
+
+ <group name="groups.{{ name }}**">
+aaa group server {{ protocol }} {{ name }}
+ server name {{ server }}
+ </group>
+
+ <group name="authentication**.{{ type }}**.{{ list }}**">
+## TODO: these are not capturing the local_case var 
+aaa authentication {{ type | _start_ }} {{ list }} group {{ primary_group }} group {{ secondary_group }} local-case {{ local_case | set(True) }}
+aaa authentication {{ type | _start_ }} {{ list }} local-case {{ local_case | set(True) }}
+aaa authentication {{ type | _start_ }} {{ list }} group {{ primary_group }} group {{ secondary_group }} enable {{ enable | set(True) }}
+##aaa authentication {{ type | _start_ }} {{ list }} group {{ primary }} local-case {{ local_case | set(True) }}
+##aaa authentication {{ type | _start_ }} {{ list }} group {{ primary }}
+##aaa authentication {{ type | _start_ }} {{ list }} group {{ primary }} group {{ secondary }}
+ </group>
+
+ <group name="authorization**">
+  <group name="console">
+aaa authorization console {{ enabled | set(True) }}
+  </group>
+  <group name="{{ type }}**.{{ list }}**">
+aaa authorization {{ type | _start_ }} {{ list }} group {{ primary_group }} group {{ secondary_group }} {{ auth_scope }}
+aaa authorization {{ type | _start_ }} {{ list }} {{ auth_scope }}
+  </group>
+  <group name="commands**.{{ priv_level }}**.{{ list }}**">
+aaa authorization commands {{ priv_level | _start_ }} {{ list }} group {{ primary_group }} group {{ secondary_group }} {{ auth_scope }}
+aaa authorization commands {{ priv_level | _start_ }} {{ list }} {{ auth_scope }}
+  </group>
+ </group>
+
+ <group name="accounting**">
+aaa accounting update periodic {{ update_period_minutes }}
+aaa accounting update newinfo periodic {{ update_period_minutes | _start_ }}
+  <group name="send_stop_record**">
+aaa accounting send stop-record authentication failure {{ auth_failure | set(True) }}
+aaa accounting send stop-record authentication success {{ auth_success | set(True) }}
+  </group>
+  <group name="exec**.{{ list }}**">
+aaa accounting exec {{ list }} {{ record_on }} group {{ primary_group }} group {{ secondary_group }}
+  </group>
+  <group name="commands**.{{ priv_level }}**.{{ list }}**">
+aaa accounting commands {{ priv_level }} {{ list }} {{ record_on }} group {{ primary_group }} group {{ secondary_group }}
+  </group>
+ </group>
+</group>
